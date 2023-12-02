@@ -23,8 +23,6 @@ const Player = (symbol) => {
 }; 
 
 
-
-
 const gameController = (() => {
     const playerX = Player('X'); 
     const playerO = Player('O');  
