@@ -22,12 +22,20 @@ const Player = (symbol) => {
     return { getSymbol }; 
 }; 
 
+function player(name) {
+    this.name = name; 
+}
+
 
 const gameController = (() => {
     const playerX = Player('X'); 
     const playerO = Player('O');  
       
     let currentPlayer = playerX;
+
+    const getCurrentPlayerSymbol = () => {
+        return currentPlayer.getSymbol(); 
+    } 
 
     const switchPlayer = () => {
         currentPlayer = currentPlayer === playerX ? playerO : playerX;
@@ -77,7 +85,7 @@ const gameController = (() => {
         if (diag1.every(cell => cell === 'X') || diag2.every(cell => cell === 'X')) {
             return 'X'; 
         }
-        if (diag1.every(cell => cell === 'X') || diag2.every(cell => cell === 'X')) {
+        if (diag1.every(cell => cell === 'O') || diag2.every(cell => cell === 'O')) {
             return 'O'; 
         }
 
@@ -100,6 +108,77 @@ const gameController = (() => {
         }
     }
 
-    return { playTurn, resetGame }; 
+    return { playTurn, resetGame, getCurrentPlayerSymbol }; 
 })(); 
+
+
+const UI = (() => {
+    const displayLocic = {
+        squares: document.querySelectorAll('.square'),
+        startButton: document.getElementById('start-btn'),
+        restartButton: document.getElementById('restart-btn'),
+        player1Name: document.getElementById('player-1'),
+        player2Name: document.getElementById('player-2'),
+        playerNames: document.querySelector('.player-names')
+    };
+
+    const playGame = function() {
+        displayLocic.startButton.addEventListener('click', startGame);
+
+        displayLocic.squares.forEach(square => {
+            square.addEventListener('click', playTurn)
+        });
+
+        displayLocic.restartButton.addEventListener('click', restartGame); 
+    }
+
+    const playTurn = function(event) {  
+        const clickedSquareId = event.target.id; 
+        const row = parseInt(clickedSquareId.charAt(0), 10); 
+        const column = parseInt(clickedSquareId.charAt(1), 10); 
+
+        if (event.target.textContent === '') {
+            if (gameController.getCurrentPlayerSymbol() === 'X') {
+                event.target.textContent = 'X'
+            } else {
+                event.target.textContent = 'O';
+            }
+        }
+        gameController.playTurn(row, column);
+    }
+
+    const startGame = function() {
+        displayLocic.player1Name.style.display = 'none';
+        displayLocic.player2Name.style.display = 'none';
+
+        const p1Name = document.createElement('div');
+        p1Name.textContent = displayLocic.player1Name.value;
+        displayLocic.playerNames.appendChild(p1Name);
+
+        const p2Name = document.createElement('div');
+        p2Name.textContent = displayLocic.player2Name.value;
+        displayLocic.playerNames.appendChild(p2Name);
+        
+
+    }
+
+    const restartGame = () => {
+        Gameboard.resetBoard();   
+        resetSquares();  
+    }
+
+    const resetSquares = () => {
+        Gameboard.resetBoard(); 
+        displayLocic.squares.forEach(square => {
+            square.textContent = ''; 
+        }); 
+    }
+
+    return { playGame }
+})();
+
+
+UI.playGame();
+
+
 
