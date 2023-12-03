@@ -22,11 +22,6 @@ const Player = (symbol) => {
     return { getSymbol }; 
 }; 
 
-function player(name) {
-    this.name = name; 
-}
-
-
 const gameController = (() => {
     const playerX = Player('X'); 
     const playerO = Player('O');  
@@ -44,17 +39,13 @@ const gameController = (() => {
     const playTurn = (row, col) => {
         if (Gameboard.getBoard()[row][col] === '') {
             Gameboard.setCell(row, col, currentPlayer.getSymbol());
-            gameResult(); 
+            //gameResult(); 
             console.log(Gameboard.getBoard());
-            if (gameResult() === null) {
+            if (gameResult() === '') {
                 switchPlayer(); 
             } else { 
-                //always start with playerX
-                if (currentPlayer === playerO) {
-                    currentPlayer = playerX; 
-                }
-                displayWinner(); 
                 resetGame(); 
+                currentPlayer = playerX; 
             }
             
         }
@@ -62,20 +53,21 @@ const gameController = (() => {
 
     const resetGame = () => {
         Gameboard.resetBoard(); 
-        currentPlayer = playerX; 
     }; 
 
+    let winner = ''; 
     const gameResult = function() {
+        winner = ''; 
         const board = Gameboard.getBoard();
         const size = board.length;
 
         //check rows and columns
         for(let i = 0; i < size; i++) {
             if (board[i].every(cell => cell === 'X') || board.every(row => row[i] === 'X')) {
-                return 'X';
+                winner = 'X';
             }
             if (board[i].every(cell => cell === 'O') || board.every(row => row[i] === 'O')) {
-                return 'O';
+                winner = 'O';
             }
         }
 
@@ -83,32 +75,26 @@ const gameController = (() => {
         const diag1 = [board[0][0], board[1][1], board[2][2]];
         const diag2 = [board[0][2], board[1][1], board[2][0]];
         if (diag1.every(cell => cell === 'X') || diag2.every(cell => cell === 'X')) {
-            return 'X'; 
+            winner = 'X'; 
         }
         if (diag1.every(cell => cell === 'O') || diag2.every(cell => cell === 'O')) {
-            return 'O'; 
+            winner = 'O'; 
         }
 
         //check for a tie
         if (board.every(row => row.every(cell => cell !== ''))) {
-            return "tie";
+            winner = "tie";
         }
 
         //no winner yet
-        return null; 
+        return winner; 
     }
 
-    const displayWinner = () => {
-        if (gameResult() === 'X') {
-            alert('The winner is X!')
-        } else if (gameResult() === 'O') {
-            alert('The winner is O!')
-        } else if (gameResult() === 'tie') {
-            alert("It's a tie!")
-        }
-    }
+    const getResult = () => {
+        return winner;
+    };
 
-    return { playTurn, resetGame, getCurrentPlayerSymbol }; 
+    return { playTurn, resetGame, getCurrentPlayerSymbol, getResult }; 
 })(); 
 
 
@@ -117,10 +103,18 @@ const UI = (() => {
         squares: document.querySelectorAll('.square'),
         startButton: document.getElementById('start-btn'),
         restartButton: document.getElementById('restart-btn'),
-        player1Name: document.getElementById('player-1'),
-        player2Name: document.getElementById('player-2'),
-        playerNames: document.querySelector('.player-names')
+        player1Input: document.getElementById('player-1'),
+        player2Input: document.getElementById('player-2'),
+        player1Name: document.querySelector('.p1'),
+        player2Name: document.querySelector('.p2'),
+        playerNames: document.querySelector('.player-names'),
+        inputboxes: document.querySelector('.start-inputs')
     };
+
+    let originalInputBox = displayLocic.inputboxes.innerHTML;
+    let originalPlayerNames = displayLocic.playerNames.innerHTML; 
+    let originalP1 = displayLocic.player1Input.innerHTML; 
+    let originalP2 = displayLocic.player2Input.innerHTML; 
 
     const playGame = function() {
         displayLocic.startButton.addEventListener('click', startGame);
@@ -145,26 +139,56 @@ const UI = (() => {
             }
         }
         gameController.playTurn(row, column);
+        console.log(gameController.getResult());
+        displayWinner();
+    }
+
+    const displayWinner = function() {
+        const winner = document.createElement('div');
+        if (gameController.getResult() === 'X') {   
+            winner.textContent = `${displayLocic.player1Input.value} is the winner!`;
+            displayLocic.inputboxes.innerHTML = ''; 
+            displayLocic.inputboxes.appendChild(winner); 
+        } else if (gameController.getResult() === 'O') {
+            winner.textContent = `${displayLocic.player2Input.value} is the winner!`;
+            displayLocic.inputboxes.innerHTML = ''; 
+            displayLocic.inputboxes.appendChild(winner); 
+        } else if (gameController.getResult === 'tie') {
+            winner.textContent = "It's a tie!";
+            displayLocic.inputboxes.innerHTML = ''; 
+            displayLocic.inputboxes.appendChild(winner); 
+        }
     }
 
     const startGame = function() {
-        displayLocic.player1Name.style.display = 'none';
-        displayLocic.player2Name.style.display = 'none';
+            // Clear the playerNames container
+        displayLocic.playerNames.innerHTML = '';
+        displayLocic.startButton.style.display = 'none'; 
 
+        // Create and append player 1's name
         const p1Name = document.createElement('div');
-        p1Name.textContent = displayLocic.player1Name.value;
+        p1Name.textContent = displayLocic.player1Input.value;
         displayLocic.playerNames.appendChild(p1Name);
 
-        const p2Name = document.createElement('div');
-        p2Name.textContent = displayLocic.player2Name.value;
-        displayLocic.playerNames.appendChild(p2Name);
-        
+        // Create and append the "VS" text
+        const vsText = document.createElement('span');
+        vsText.textContent = ' VS ';
+        displayLocic.playerNames.appendChild(vsText);
 
+        // Create and append player 2's name
+        const p2Name = document.createElement('div');
+        p2Name.textContent = displayLocic.player2Input.value;
+        displayLocic.playerNames.appendChild(p2Name);
+
+        // Optionally, hide the input boxes if they are no longer needed
+        displayLocic.player1Input.style.display = 'none';
+        displayLocic.player2Input.style.display = 'none';
     }
 
     const restartGame = () => {
         Gameboard.resetBoard();   
-        resetSquares();  
+        resetSquares(); 
+        resetInputs(); 
     }
 
     const resetSquares = () => {
@@ -174,11 +198,26 @@ const UI = (() => {
         }); 
     }
 
+    const resetInputs = () => {
+        displayLocic.inputboxes.innerHTML = originalInputBox;
+        displayLocic.playerNames.innerHTML = originalPlayerNames; 
+        displayLocic.player1Input.innerHTML = originalP1; 
+        displayLocic.player2Input.innerHTML = originalP2; 
+
+        // Re-query the DOM for elements and reattach event listeners
+        displayLocic.startButton = document.getElementById('start-btn');
+        displayLocic.playerNames = document.querySelector('.player-names');
+        displayLocic.player1Input = document.getElementById('player-1');
+        displayLocic.player2Input = document.getElementById('player-2');
+
+        // Reattach the event listener to the start button
+        displayLocic.startButton.addEventListener('click', startGame);
+    }
+
     return { playGame }
 })();
 
 
 UI.playGame();
-
 
 
