@@ -39,7 +39,6 @@ const gameController = (() => {
     const playTurn = (row, col) => {
         if (Gameboard.getBoard()[row][col] === '') {
             Gameboard.setCell(row, col, currentPlayer.getSymbol());
-            //gameResult(); 
             console.log(Gameboard.getBoard());
             if (gameResult() === '') {
                 switchPlayer(); 
@@ -53,6 +52,7 @@ const gameController = (() => {
 
     const resetGame = () => {
         Gameboard.resetBoard(); 
+        currentPlayer = playerX;
     }; 
 
     let winner = ''; 
@@ -60,13 +60,16 @@ const gameController = (() => {
         winner = ''; 
         const board = Gameboard.getBoard();
         const size = board.length;
+        let isWinnerDeclared = false; 
 
         //check rows and columns
         for(let i = 0; i < size; i++) {
             if (board[i].every(cell => cell === 'X') || board.every(row => row[i] === 'X')) {
+                isWinnerDeclared = true; 
                 winner = 'X';
             }
             if (board[i].every(cell => cell === 'O') || board.every(row => row[i] === 'O')) {
+                isWinnerDeclared = true; 
                 winner = 'O';
             }
         }
@@ -75,14 +78,16 @@ const gameController = (() => {
         const diag1 = [board[0][0], board[1][1], board[2][2]];
         const diag2 = [board[0][2], board[1][1], board[2][0]];
         if (diag1.every(cell => cell === 'X') || diag2.every(cell => cell === 'X')) {
+            isWinnerDeclared = true; 
             winner = 'X'; 
         }
         if (diag1.every(cell => cell === 'O') || diag2.every(cell => cell === 'O')) {
+            isWinnerDeclared = true; 
             winner = 'O'; 
         }
 
         //check for a tie
-        if (board.every(row => row.every(cell => cell !== ''))) {
+        if (isWinnerDeclared === false &&  board.every(row => row.every(cell => cell !== ''))) {
             winner = "tie";
         }
 
@@ -127,20 +132,21 @@ const UI = (() => {
     }
 
     const playTurn = function(event) {  
-        const clickedSquareId = event.target.id; 
-        const row = parseInt(clickedSquareId.charAt(0), 10); 
-        const column = parseInt(clickedSquareId.charAt(1), 10); 
+            const clickedSquareId = event.target.id; 
+            const row = parseInt(clickedSquareId.charAt(0), 10); 
+            const column = parseInt(clickedSquareId.charAt(1), 10); 
 
-        if (event.target.textContent === '') {
-            if (gameController.getCurrentPlayerSymbol() === 'X') {
-                event.target.textContent = 'X'
-            } else {
-                event.target.textContent = 'O';
+            if (event.target.textContent === '') {
+                if (gameController.getCurrentPlayerSymbol() === 'X') {
+                    event.target.textContent = 'X'
+                } else {
+                    event.target.textContent = 'O';
+                }
             }
-        }
-        gameController.playTurn(row, column);
-        console.log(gameController.getResult());
-        displayWinner();
+
+            gameController.playTurn(row, column);
+            displayWinner();
+            console.log(gameController.getResult());
     }
 
     const displayWinner = function() {
@@ -153,7 +159,7 @@ const UI = (() => {
             winner.textContent = `${displayLocic.player2Input.value} is the winner!`;
             displayLocic.inputboxes.innerHTML = ''; 
             displayLocic.inputboxes.appendChild(winner); 
-        } else if (gameController.getResult === 'tie') {
+        } else if (gameController.getResult() === 'tie') {
             winner.textContent = "It's a tie!";
             displayLocic.inputboxes.innerHTML = ''; 
             displayLocic.inputboxes.appendChild(winner); 
@@ -186,7 +192,7 @@ const UI = (() => {
     }
 
     const restartGame = () => {
-        Gameboard.resetBoard();   
+        gameController.resetGame();   
         resetSquares(); 
         resetInputs(); 
     }
