@@ -43,6 +43,10 @@ input {
     border-radius: 10px; 
 }
 
+.VS {
+    padding-left: 15px;
+}
+
 button {
     margin-top: -5px;
     border-radius: 10px;
