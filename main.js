@@ -152,11 +152,19 @@ const UI = (() => {
     const displayWinner = function() {
         const winner = document.createElement('div');
         if (gameController.getResult() === 'X') {   
-            winner.textContent = `${displayLocic.player1Input.value} is the winner!`;
+            if (displayLocic.player1Input.value === "") {
+                winner.textContent = 'X is the winner!'
+            } else {
+                winner.textContent = `${displayLocic.player1Input.value} is the winner!`;
+            }
             displayLocic.inputboxes.innerHTML = ''; 
             displayLocic.inputboxes.appendChild(winner); 
         } else if (gameController.getResult() === 'O') {
-            winner.textContent = `${displayLocic.player2Input.value} is the winner!`;
+            if (displayLocic.player2Input.value === "") {
+                winner.textContent = 'O is the winner!'; 
+            } else {
+                winner.textContent = `${displayLocic.player2Input.value} is the winner!`;
+            }
             displayLocic.inputboxes.innerHTML = ''; 
             displayLocic.inputboxes.appendChild(winner); 
         } else if (gameController.getResult() === 'tie') {
@@ -170,21 +178,32 @@ const UI = (() => {
             // Clear the playerNames container
         displayLocic.playerNames.innerHTML = '';
         displayLocic.startButton.style.display = 'none'; 
+        const liveNames = document.createElement('div');
+        liveNames.className = 'live-names';
+        displayLocic.playerNames.appendChild(liveNames);
 
         // Create and append player 1's name
         const p1Name = document.createElement('div');
-        p1Name.textContent = displayLocic.player1Input.value;
-        displayLocic.playerNames.appendChild(p1Name);
+        if (displayLocic.player1Input.value === "") {
+            p1Name.textContent = 'X';
+        } else {
+            p1Name.textContent = displayLocic.player1Input.value;
+        }
+        liveNames.appendChild(p1Name);
 
         // Create and append the "VS" text
         const vsText = document.createElement('span');
         vsText.textContent = ' VS ';
-        displayLocic.playerNames.appendChild(vsText);
+        liveNames.appendChild(vsText);
 
         // Create and append player 2's name
         const p2Name = document.createElement('div');
-        p2Name.textContent = displayLocic.player2Input.value;
-        displayLocic.playerNames.appendChild(p2Name);
+        if (displayLocic.player2Input.value === "") {
+            p2Name.textContent = "O";
+        } else {
+            p2Name.textContent = displayLocic.player2Input.value;
+        }
+        liveNames.appendChild(p2Name);
 
         // Optionally, hide the input boxes if they are no longer needed
         displayLocic.player1Input.style.display = 'none';
